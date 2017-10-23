@@ -50,7 +50,7 @@ The current default API base url is https://time-series-store-predix.run.aws-usw
 Once you have all the correct information and deploy the flow, you should see the node showing "Authenticated".
 ![](readme_images/data_query_authenticated.png?raw=true)
 
-The data query node has a drop down menu with 4 options. They are referring to four API endpoints of the [Preix timeseries data services](https://www.predix.io/api#!/Asset).
+The data query node has a drop down menu with 4 options. They are referring to four API endpoints of the [Predix timeseries data services](https://www.predix.io/services/service.html?id=1177).
     
    * Get all available aggregations
    * Query datapoints
