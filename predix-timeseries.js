@@ -28,7 +28,7 @@ const originPath = "http://localhost/";
 
 module.exports = function(RED){
   "use strict";
-
+  
   function timeseriesClientNode(n){
     
     RED.nodes.createNode(this,n);
@@ -71,6 +71,7 @@ module.exports = function(RED){
           node.emit('authenticated','');
           node.tokenExpiryTime = (new Date).getTime() + JSON.parse(response.body).expires_in*SECONDS_CONVERT_TO_MS; 
         } catch (err) {
+          node.error(err);
           node.emit('accessTokenError');
         }
       } else {
@@ -148,11 +149,12 @@ module.exports = function(RED){
     var node = this;
     var isWsConnected = false;
     this.server = RED.nodes.getNode(config.server);
+    node.wsUrl = node.server.wsUrl ? node.server.wsUrl : "";
 
     if(this.server){
       node.predixZoneId = node.server.predixZoneId;
       node.accessToken = node.server.accessToken;
-
+      
       if(node.predixZoneId && node.accessToken){
         startconn();
       };
@@ -205,7 +207,7 @@ module.exports = function(RED){
         }
         return;
       }
-      var socket = new ws(wsURL, opts);
+      var socket = new ws(node.wsUrl, opts);
       node.connection = socket;
       handleConnection(node.connection);
     }
@@ -316,31 +318,32 @@ module.exports = function(RED){
         node.status({fill:"red",shape:"ring",text:"Access Error"});
         node.predixZoneId = "";
         node.accessToken = "";        
-      });  
+      });
+      
+      switch(node.queryType){
+        case "aggregations":
+          node.apiEndpoint = node.server.queryUrlPrefix + "aggregations";
+          requestMethod = 'GET';
+          break;
+        case "datapoints":
+          node.apiEndpoint = node.server.queryUrlPrefix + "datapoints";
+          requestMethod = 'POST';
+          break;
+        case "currentDatapoints":
+          node.apiEndpoint = node.server.queryUrlPrefix + "datapoints/latest";
+          requestMethod = 'POST';
+          break;
+        case "tags":
+          node.apiEndpoint = node.server.queryUrlPrefix + "tags";
+          requestMethod = 'GET';
+          break;
+        default:
+          node.apiEndpoint = node.server.queryUrlPrefix;
+      };
+
     } else {
       node.status({fill:"yellow", shape:"dot",text:"Missing server config"});
     }
-
-    switch(node.queryType){
-      case "aggregations":
-        node.apiEndpoint = node.server.queryUrlPrefix + "aggregations";
-        requestMethod = 'GET';
-        break;
-      case "datapoints":
-        node.apiEndpoint = node.server.queryUrlPrefix + "datapoints";
-        requestMethod = 'POST';
-        break;
-      case "currentDatapoints":
-        node.apiEndpoint = node.server.queryUrlPrefix + "datapoints/latest";
-        requestMethod = 'POST';
-        break;
-      case "tags":
-        node.apiEndpoint = node.server.queryUrlPrefix + "tags";
-        requestMethod = 'GET';
-        break;
-      default:
-        node.apiEndpoint = node.server.queryUrlPrefix;
-    };
 
     function requestCall(msg){
       if (msg.hasOwnProperty("payload")){
@@ -368,7 +371,13 @@ module.exports = function(RED){
             if (response.statusCode!==200){
               node.error(response.statusCode+": "+response.body);
             } else {
-              node.send({payload:response.body});
+              var result;
+              try {
+                result = JSON.parse(response.body);
+              } catch (err) {
+                result = response.body;
+              }
+              node.send({payload:result});
             }
           }          
         });

@@ -72,7 +72,7 @@ Now let's start the setup.
     	cf create-service predix-uaa Tiered <your-name>-secure-uaa-instance -c '{\"adminClientSecret\":\"<YOUR ADMIN PASSWORD>\"}'
 
 7. Then, login to the [Predix Developer Network console](https://www.predix.io/), find your space, and then in the service instances tab, find the UAA service that you just created, click on it.
-    * You should see a "configure service instance" button on the right hand side, click on it
+    * You should see a "open service instance" button on the right hand side, click on it
     * Now you will be prompted to enter the admin password for the UAA instance that you just created
     * Once you login, you will see your UAA url at the bottom at the dashboard, copy this url for later use.
 
@@ -104,11 +104,11 @@ Now let's start the setup.
             - <YourAppName>-timeseries-instance
         env:
             clientId: <client id  that you created in UAA instance>
-            base64ClientCredential: <open the terminal, enter "echo –n app_client_id:secret | base64", copy the converted value to here>
+            base64ClientCredential: <open the terminal, enter "echo –n <your_app_client_id>:<your_client_secret> | base64", copy the converted value to here>
             
     Note: if you are working on a Windows environment, you can use an online Base64 encoding tool.
 
-    Now save the yml file, and do a "cf push" again. Once it's done, verify with "cf env Predix-HelloWorld-WebApp-<YourAppName>". You will see the config of this app, and we will need these values for the next step. The value of "zone-http-header-value" will be the <your-timeseries-zone-id> that you need.     
+    Now save the yml file, and do a "cf push" again. Once it's done, verify with "cf env Predix-HelloWorld-WebApp-<YourAppName>". You will see the config of this app, and we will need these values for the next step. The value of "zone-http-header-value" will be the \<your-timeseries-zone-id> that you need.     
     
 ## 4. Update UAA settings    
     
